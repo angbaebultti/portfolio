@@ -2,7 +2,7 @@ import IntroSequence from '@components/intro/IntroSequence'
 
 function App() {
   return (
-    <main>
+    <main className="app-shell">
       <IntroSequence />
     </main>
   )

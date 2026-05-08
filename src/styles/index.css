@@ -8,13 +8,23 @@
 }
 
 html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #000;
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
 }
 
 body {
-  min-height: 100vh;
-  background: #000;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: black;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
     'Helvetica Neue', sans-serif;
   font-size: 1rem;
@@ -69,17 +79,170 @@ button {
 }
 
 #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: black;
   isolation: isolate;
+}
+
+.app-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: black;
 }
 
 /* Three.js / scene containers */
 .scene-shell {
   position: fixed;
   inset: 0;
+  width: 100vw !important;
+  height: 100vh !important;
   z-index: 0;
 }
 
 .scene-scroll-trigger {
   position: relative;
   pointer-events: none;
+}
+
+.void-depth-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 24% 27% at 50% 47%,
+      rgba(0, 0, 0, 0.52) 0,
+      rgba(0, 0, 0, 0.42) 42%,
+      rgba(0, 0, 0, 0.08) 72%,
+      rgba(0, 0, 0, 0) 100%
+    ),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.16), transparent 28%, transparent 66%, rgba(0, 0, 0, 0.32));
+}
+
+.crt-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.018), rgba(0, 0, 0, 0) 34%),
+    radial-gradient(circle at 50% 52%, rgba(0, 0, 0, 0) 32%, rgba(0, 0, 0, 0.68) 100%),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.026) 0,
+      rgba(255, 255, 255, 0.026) 1px,
+      rgba(0, 0, 0, 0.078) 2px,
+      rgba(0, 0, 0, 0.078) 4px
+    ),
+    repeating-radial-gradient(
+      circle at 18% 24%,
+      rgba(255, 255, 255, 0.024) 0,
+      rgba(255, 255, 255, 0.024) 1px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0) 5px
+    );
+  mix-blend-mode: normal;
+}
+
+.crt-atmosphere::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background:
+    linear-gradient(90deg, rgba(255, 80, 60, 0.04), transparent 16%, transparent 84%, rgba(80, 220, 255, 0.04)),
+    radial-gradient(circle at 50% 52%, transparent 0, transparent 36%, rgba(0, 0, 0, 0.46) 100%);
+}
+
+.vhs-monitor-frame {
+  position: fixed;
+  inset: clamp(14px, 2vw, 28px);
+  z-index: 3;
+  pointer-events: none;
+  color: rgba(255, 224, 198, 0.74);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(9px, 0.92vw, 13px);
+  letter-spacing: 0.1em;
+  text-shadow:
+    1px 0 rgba(255, 90, 60, 0.32),
+    -1px 0 rgba(80, 210, 255, 0.28),
+    0 0 7px rgba(255, 255, 255, 0.36);
+}
+
+.corner {
+  position: absolute;
+  width: clamp(18px, 2vw, 30px);
+  height: clamp(18px, 2vw, 30px);
+  border-color: rgba(255, 210, 178, 0.78);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.38));
+}
+
+.corner-tl {
+  top: 0;
+  left: 0;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.corner-tr {
+  top: 0;
+  right: 0;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+
+.corner-bl {
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+}
+
+.corner-br {
+  right: 0;
+  bottom: 0;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+}
+
+.monitor-readout {
+  position: absolute;
+  top: clamp(12px, 1.8vw, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.12em;
+  opacity: 0.88;
+}
+
+.readout-left {
+  left: clamp(30px, 3vw, 58px);
+}
+
+.readout-right {
+  right: clamp(30px, 3vw, 58px);
+  text-align: right;
+}
+
+.terminal-strip {
+  position: absolute;
+  bottom: clamp(22px, 3.8vw, 58px);
+  left: clamp(10px, 1vw, 18px);
+  width: clamp(8px, 0.8vw, 12px);
+  height: clamp(120px, 24vh, 260px);
+  opacity: 0.42;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 96, 44, 0.82) 0,
+      rgba(255, 96, 44, 0.82) 1px,
+      transparent 1px,
+      transparent 5px
+    );
+  box-shadow: 0 0 9px rgba(255, 88, 40, 0.42);
 }
