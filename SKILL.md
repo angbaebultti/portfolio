@@ -746,3 +746,31 @@ The retro room scene was rendering as a thin strip because the Canvas viewport h
 - No floating objects.
 - No sci-fi visualizer.
 - Corruption must feel screen-based and physical, as if the monitor itself is failing.
+
+---
+
+## ErrorScreen glitch handoff update (2026-05-09)
+
+### Changed file
+
+| File | Change |
+|------|--------|
+| `src/components/intro/ErrorScreen.tsx` | Added a two-step post-typing corruption transition before `BrokenLCD`. |
+
+### Sequence
+
+1. Existing blue error text types normally.
+2. A 0.5s text-stretch phase duplicates the final lines, corrupts characters, and pulls the text downward with uneven horizontal offsets.
+3. A 0.5s screen-corruption phase flickers the blue framebuffer, adds scanlines, RGB text separation, and horizontal tearing overlays.
+4. `onComplete()` fires after the corruption phase, handing off to `BrokenLCD`.
+
+### Implementation notes
+
+- Added `FailurePhase` state: `typing`, `stretch`, `corrupt`.
+- Replaced the direct post-typing timeout with staged timers: stretch at typing completion, corrupt at +500ms, complete at +1000ms.
+- The smear is CSS-driven using duplicated bottom text lines plus deterministic character corruption.
+- The blue-screen corruption uses pseudo-element overlays, scanline gradients, row tears, background flicker, and RGB text-shadow offsets.
+
+### Keywords
+
+`blue screen corruption` / `text stretch` / `framebuffer read error` / `vertical smear` / `RGB split` / `horizontal tearing`
