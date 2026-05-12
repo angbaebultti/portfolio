@@ -25,7 +25,8 @@ body {
   padding: 0;
   overflow: hidden;
   background: black;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
     'Helvetica Neue', sans-serif;
   font-size: 1rem;
   line-height: 1.5;
@@ -103,6 +104,14 @@ button {
   width: 100vw !important;
   height: 100vh !important;
   z-index: 0;
+  transform-origin: 50% 50%;
+  animation: scene-analog-breathe 7.2s ease-in-out infinite;
+  filter: contrast(1.2) saturate(1.12) brightness(0.88);
+}
+
+.scene-shell--emerging {
+  animation: scene-emerge-from-signal 1.18s steps(10, end) both;
+  filter: contrast(1.28) saturate(1.08) brightness(0.76);
 }
 
 .scene-scroll-trigger {
@@ -117,13 +126,21 @@ button {
   pointer-events: none;
   background:
     radial-gradient(
-      ellipse 24% 27% at 50% 47%,
-      rgba(0, 0, 0, 0.52) 0,
-      rgba(0, 0, 0, 0.42) 42%,
-      rgba(0, 0, 0, 0.08) 72%,
+      ellipse 34% 36% at 50% 48%,
+      rgba(0, 0, 0, 0.9) 0,
+      rgba(0, 0, 0, 0.82) 42%,
+      rgba(44, 0, 58, 0.16) 74%,
       rgba(0, 0, 0, 0) 100%
     ),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.16), transparent 28%, transparent 66%, rgba(0, 0, 0, 0.32));
+    radial-gradient(ellipse 54% 32% at 50% 61%, rgba(255, 42, 210, 0.045), transparent 70%),
+    radial-gradient(ellipse 50% 30% at 50% 58%, rgba(0, 0, 0, 0.48), transparent 72%),
+    linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.22),
+      transparent 24%,
+      transparent 62%,
+      rgba(0, 0, 0, 0.42)
+    );
 }
 
 .crt-atmosphere {
@@ -132,14 +149,14 @@ button {
   z-index: 2;
   pointer-events: none;
   background:
-    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.018), rgba(0, 0, 0, 0) 34%),
-    radial-gradient(circle at 50% 52%, rgba(0, 0, 0, 0) 32%, rgba(0, 0, 0, 0.68) 100%),
+    radial-gradient(circle at 50% 50%, rgba(255, 82, 220, 0.026), rgba(0, 0, 0, 0) 38%),
+    radial-gradient(circle at 50% 52%, rgba(0, 0, 0, 0) 28%, rgba(0, 0, 0, 0.8) 100%),
     repeating-linear-gradient(
       to bottom,
-      rgba(255, 255, 255, 0.026) 0,
-      rgba(255, 255, 255, 0.026) 1px,
-      rgba(0, 0, 0, 0.078) 2px,
-      rgba(0, 0, 0, 0.078) 4px
+      rgba(255, 210, 250, 0.036) 0,
+      rgba(255, 210, 250, 0.036) 1px,
+      rgba(0, 0, 0, 0.18) 2px,
+      rgba(0, 0, 0, 0.18) 5px
     ),
     repeating-radial-gradient(
       circle at 18% 24%,
@@ -149,6 +166,7 @@ button {
       rgba(0, 0, 0, 0) 5px
     );
   mix-blend-mode: normal;
+  backdrop-filter: blur(0.18px) saturate(1.02);
 }
 
 .crt-atmosphere::after {
@@ -156,8 +174,16 @@ button {
   inset: 0;
   content: '';
   background:
-    linear-gradient(90deg, rgba(255, 80, 60, 0.04), transparent 16%, transparent 84%, rgba(80, 220, 255, 0.04)),
-    radial-gradient(circle at 50% 52%, transparent 0, transparent 36%, rgba(0, 0, 0, 0.46) 100%);
+    linear-gradient(
+      90deg,
+      rgba(255, 54, 190, 0.035),
+      transparent 16%,
+      transparent 84%,
+      rgba(50, 220, 255, 0.04)
+    ),
+    radial-gradient(circle at 50% 57%, rgba(255, 58, 202, 0.035), transparent 32%),
+    radial-gradient(circle at 50% 52%, transparent 0, transparent 32%, rgba(0, 0, 0, 0.66) 100%);
+  animation: vhs-color-bloom 3.8s steps(5, end) infinite;
 }
 
 .vhs-monitor-frame {
@@ -165,22 +191,22 @@ button {
   inset: clamp(14px, 2vw, 28px);
   z-index: 3;
   pointer-events: none;
-  color: rgba(255, 224, 198, 0.74);
+  color: rgba(255, 174, 104, 0.9);
   font-family: 'Courier New', Courier, monospace;
   font-size: clamp(9px, 0.92vw, 13px);
   letter-spacing: 0.1em;
   text-shadow:
     1px 0 rgba(255, 90, 60, 0.32),
     -1px 0 rgba(80, 210, 255, 0.28),
-    0 0 7px rgba(255, 255, 255, 0.36);
+    0 0 10px rgba(255, 96, 206, 0.45);
 }
 
 .corner {
   position: absolute;
   width: clamp(18px, 2vw, 30px);
   height: clamp(18px, 2vw, 30px);
-  border-color: rgba(255, 210, 178, 0.78);
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.38));
+  border-color: rgba(255, 160, 92, 0.86);
+  filter: drop-shadow(0 0 5px rgba(255, 78, 198, 0.48));
 }
 
 .corner-tl {
@@ -235,14 +261,293 @@ button {
   left: clamp(10px, 1vw, 18px);
   width: clamp(8px, 0.8vw, 12px);
   height: clamp(120px, 24vh, 260px);
-  opacity: 0.42;
+  opacity: 0.64;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 96, 44, 0.95) 0,
+    rgba(255, 96, 44, 0.95) 1px,
+    transparent 1px,
+    transparent 5px
+  );
+  box-shadow:
+    0 0 9px rgba(255, 88, 40, 0.72),
+    0 0 18px rgba(255, 45, 188, 0.28);
+}
+
+.signal-contamination {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 1;
+  mix-blend-mode: screen;
+}
+
+.signal-contamination::before,
+.signal-contamination::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  pointer-events: none;
+}
+
+.signal-contamination::before {
   background:
     repeating-linear-gradient(
       to bottom,
-      rgba(255, 96, 44, 0.82) 0,
-      rgba(255, 96, 44, 0.82) 1px,
+      rgba(255, 204, 250, 0.036) 0,
+      rgba(255, 204, 250, 0.036) 1px,
+      rgba(0, 0, 0, 0.18) 2px,
+      rgba(0, 0, 0, 0.18) 5px
+    ),
+    repeating-linear-gradient(
+      to right,
+      rgba(80, 220, 255, 0.012) 0,
+      rgba(80, 220, 255, 0.012) 1px,
       transparent 1px,
-      transparent 5px
+      transparent 184px
     );
-  box-shadow: 0 0 9px rgba(255, 88, 40, 0.42);
+  animation: signal-scanline-drift 0.42s steps(3, end) infinite;
+}
+
+.signal-contamination::after {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 62, 210, 0.018), transparent 38%),
+    linear-gradient(
+      90deg,
+      rgba(255, 40, 182, 0.028),
+      transparent 18%,
+      transparent 82%,
+      rgba(0, 220, 255, 0.03)
+    ),
+    radial-gradient(circle at 50% 50%, transparent 0, transparent 46%, rgba(0, 0, 0, 0.58) 100%);
+  animation: signal-luma-breathe 2.1s steps(5, end) infinite;
+}
+
+.signal-contamination--error {
+  opacity: 0.34;
+}
+
+.signal-contamination--lcd {
+  opacity: 0.78;
+}
+
+.signal-contamination--space {
+  opacity: 0.24;
+  mix-blend-mode: normal;
+}
+
+.signal-contamination--revealing-space {
+  opacity: 0.72;
+}
+
+.signal-contamination__ghost-text {
+  position: absolute;
+  top: 8vh;
+  left: 5vw;
+  width: 32vw;
+  color: rgba(180, 235, 255, 0.84);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(9px, 1.05vw, 15px);
+  line-height: 1.4;
+  white-space: pre;
+  opacity: 0;
+  text-shadow:
+    2px 0 rgba(255, 0, 54, 0.72),
+    -2px 0 rgba(0, 255, 255, 0.72),
+    0 0 8px rgba(255, 255, 255, 0.34);
+  transform: translateX(0);
+  animation: signal-text-memory 0.16s steps(2, end) infinite;
+}
+
+.signal-contamination__ghost-text span {
+  display: block;
+  transform-origin: 0 50%;
+}
+
+.signal-contamination__ghost-text span:nth-child(2n) {
+  transform: translateX(1.4em) scaleX(1.18);
+}
+
+.signal-contamination__ghost-text span:nth-child(3n) {
+  transform: translateX(-0.9em) scaleY(1.3);
+}
+
+.signal-contamination--lcd .signal-contamination__ghost-text {
+  opacity: 0.38;
+}
+
+.signal-contamination--revealing-space .signal-contamination__ghost-text {
+  opacity: 0.18;
+}
+
+.signal-contamination--space .signal-contamination__ghost-text {
+  opacity: 0;
+}
+
+.signal-contamination__tear {
+  position: absolute;
+  left: -6vw;
+  width: 112vw;
+  height: 1px;
+  opacity: 0.36;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow:
+    2px 0 rgba(255, 0, 50, 0.34),
+    -2px 0 rgba(0, 255, 255, 0.34),
+    0 0 12px rgba(255, 255, 255, 0.24);
+  transform-origin: 50% 50%;
+}
+
+.signal-contamination__tear--a {
+  top: 22%;
+  animation: signal-tear-a 1.1s steps(5, end) infinite;
+}
+
+.signal-contamination__tear--b {
+  top: 51%;
+  height: 2px;
+  animation: signal-tear-b 1.44s steps(6, end) infinite;
+}
+
+.signal-contamination__tear--c {
+  top: 76%;
+  opacity: 0.24;
+  animation: signal-tear-c 1.8s steps(4, end) infinite;
+}
+
+.signal-contamination--space .signal-contamination__tear {
+  opacity: 0.16;
+}
+
+@keyframes scene-emerge-from-signal {
+  0% {
+    opacity: 0.08;
+    transform: translateX(18px) scaleY(1.08);
+    filter: contrast(1.8) saturate(0.45) brightness(0.48) blur(1.2px);
+  }
+  36% {
+    opacity: 0.38;
+    transform: translateX(-10px) scaleY(0.96);
+    filter: contrast(1.5) saturate(0.56) brightness(0.62) blur(0.8px);
+  }
+  72% {
+    opacity: 0.78;
+    transform: translateX(5px) scaleY(1.02);
+    filter: contrast(1.28) saturate(0.72) brightness(0.78) blur(0.36px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scaleY(1);
+    filter: contrast(1.12) saturate(0.88) brightness(0.92) blur(0);
+  }
+}
+
+@keyframes scene-analog-breathe {
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+  42% {
+    transform: translateX(0.28px) scale(1.0014);
+  }
+  68% {
+    transform: translateX(-0.22px) scale(0.9995);
+  }
+}
+
+@keyframes vhs-color-bloom {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: translateX(0);
+  }
+  38% {
+    opacity: 0.28;
+    transform: translateX(0.35vw);
+  }
+  62% {
+    opacity: 0.5;
+    transform: translateX(-0.22vw);
+  }
+}
+
+@keyframes signal-scanline-drift {
+  0% {
+    transform: translateY(0);
+    opacity: 0.42;
+  }
+  50% {
+    transform: translateY(2px);
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateY(-1px);
+    opacity: 0.38;
+  }
+}
+
+@keyframes signal-luma-breathe {
+  0%,
+  100% {
+    opacity: 0.48;
+  }
+  40% {
+    opacity: 0.58;
+  }
+  72% {
+    opacity: 0.38;
+  }
+}
+
+@keyframes signal-text-memory {
+  0% {
+    transform: translate(-4px, 0) scaleX(1.08);
+    filter: blur(0.3px);
+  }
+  50% {
+    transform: translate(9px, 0.2em) scaleX(0.96);
+    filter: blur(0.6px);
+  }
+  100% {
+    transform: translate(-1px, -0.1em) scaleX(1.18);
+    filter: blur(0.22px);
+  }
+}
+
+@keyframes signal-tear-a {
+  0% {
+    transform: translateX(-4vw) scaleX(0.86);
+  }
+  42% {
+    transform: translateX(10vw) scaleX(1.18);
+  }
+  100% {
+    transform: translateX(0) scaleX(0.94);
+  }
+}
+
+@keyframes signal-tear-b {
+  0% {
+    transform: translateX(8vw) scaleX(1.1);
+  }
+  54% {
+    transform: translateX(-12vw) scaleX(0.74);
+  }
+  100% {
+    transform: translateX(3vw) scaleX(1.04);
+  }
+}
+
+@keyframes signal-tear-c {
+  0% {
+    transform: translateX(-10vw) scaleX(0.52);
+  }
+  48% {
+    transform: translateX(16vw) scaleX(1.34);
+  }
+  100% {
+    transform: translateX(-2vw) scaleX(0.88);
+  }
 }

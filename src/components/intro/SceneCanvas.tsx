@@ -9,7 +9,7 @@ function SceneSetup() {
 
   useEffect(() => {
     scene.background = new THREE.Color(0x000000)
-    scene.fog = null
+    scene.fog = new THREE.FogExp2(0x120014, 0.0024)
 
     return () => {
       scene.background = null
@@ -37,15 +37,22 @@ function StarField() {
   }, [])
 
   return (
-    <points geometry={geometry}>
-      <pointsMaterial
-        color={0xffffff}
-        size={0.18}
-        sizeAttenuation
-        transparent
-        opacity={0.86}
-      />
-    </points>
+    <group>
+      <points geometry={geometry}>
+        <pointsMaterial color={0xffd8f7} size={0.18} sizeAttenuation transparent opacity={0.9} />
+      </points>
+      <points geometry={geometry}>
+        <pointsMaterial
+          color={0x66e8ff}
+          size={0.34}
+          sizeAttenuation
+          transparent
+          opacity={0.18}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </points>
+    </group>
   )
 }
 
@@ -87,14 +94,21 @@ function CameraRig({ scrollRef }: { scrollRef: RefObject<HTMLDivElement | null> 
   return null
 }
 
-export default function SceneCanvas() {
+interface SceneCanvasProps {
+  isEmerging?: boolean
+}
+
+export default function SceneCanvas({ isEmerging = false }: SceneCanvasProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const sceneClassName = ['scene-shell', isEmerging ? 'scene-shell--emerging' : '']
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <>
       <Canvas
         camera={{ position: [0, 7, 12], fov: 75, near: 0.1, far: 1000 }}
-        className="scene-shell"
+        className={sceneClassName}
         style={{
           position: 'fixed',
           inset: 0,

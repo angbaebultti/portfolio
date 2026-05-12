@@ -774,3 +774,259 @@ The retro room scene was rendering as a thin strip because the Canvas viewport h
 ### Keywords
 
 `blue screen corruption` / `text stretch` / `framebuffer read error` / `vertical smear` / `RGB split` / `horizontal tearing`
+
+---
+
+## ErrorScreen full-screen collapse update (2026-05-12)
+
+### Changed file
+
+| File | Change |
+|------|--------|
+| `src/components/intro/ErrorScreen.tsx` | Expanded the post-typing glitch from bottom-only smear into whole-screen text and framebuffer collapse. |
+
+### Sequence
+
+1. Clean blue screen typing remains unchanged.
+2. A short subtle instability phase begins after typing completes.
+3. The full display enters corruption: every visible text line mutates, jitters, smears, and flickers between readable and unreadable states.
+4. Full-screen analog failure overlays add scanline displacement, RGB split, brightness flicker, CRT tearing, framebuffer slice stretch, and noisy redraw artifacts.
+5. `onComplete()` fires after about 1.12s and hands off to `BrokenLCD`.
+
+### Implementation notes
+
+- Added a `corruptFrame` redraw tick during non-typing phases so broken text changes continuously.
+- Replaced the bottom-only smear source with `allVisibleLines`, so the collapse layer covers the entire blue screen.
+- Added `collapseLine()` to preserve approximate line lengths while injecting symbols, numbers, broken spacing, dropped characters, and fragmented ASCII.
+- The visible text itself now corrupts during failure; the overlay is no longer the only damaged layer.
+- Timing is now 280ms subtle instability plus 840ms full corruption, keeping the handoff in the requested 0.8-1.2s range.
+
+### Keywords
+
+`full-screen blue screen collapse` / `dying CRT signal` / `memory corruption` / `framebuffer failure` / `analog tearing` / `all-line text scramble`
+
+---
+
+## ErrorScreen to BrokenLCD handoff fix (2026-05-12)
+
+### Changed file
+
+| File | Change |
+|------|--------|
+| `src/components/intro/BrokenLCD.tsx` | Removed the unwanted dark blue gradient prelude between `ErrorScreen` and the LCD corruption scene. |
+
+### Implementation notes
+
+- Confirmed `IntroSequence` switches directly from `error` to `lcd` with no intermediate phase.
+- Replaced the BrokenLCD opening blue gradient fill with a pure `#0000ff` buffer.
+- Set the canvas background to `#0000ff` before the first render so image-load or first-frame timing cannot expose a gradient or blank frame.
+- Started the BrokenLCD render loop immediately instead of waiting for the reference image `onload`; the reference texture is composited into the already-running glitch as soon as it is ready.
+- Moved BrokenLCD signal timing forward so the corrupted image/glitch starts immediately after `ErrorScreen` completes instead of waiting through a blue gradient flash.
+- Global `body`/`#root` backgrounds remain solid black and do not contain radial or linear gradients.
+
+### Keywords
+
+`instant error to lcd handoff` / `no blue gradient flash` / `pure blue buffer` / `immediate broken lcd glitch`
+
+---
+
+## BrokenLCD real-image corruption rewrite (2026-05-12)
+
+### Changed files
+
+| File | Change |
+|------|--------|
+| `src/components/intro/BrokenLCD.tsx` | Rewrote the LCD transition around corrupting real image pixels instead of generating procedural texture. |
+| `public/broken-lcd-source.png` | Added the attached photographic corruption reference as the source image for the framebuffer destruction pass. |
+
+### Rendering model
+
+- Load `broken-lcd-source.png` into an offscreen canvas and fit it to the viewport.
+- Crush and desaturate the source pixels with real `ImageData` so blacks stay pure and highlights retain photographic density.
+- Build a bright-edge mask from the actual image pixels and use it for selective red/cyan edge split.
+- Draw each frame from real copied image regions, previous-frame memory, and source-column drags.
+- Keep the screen background pure black throughout BrokenLCD.
+
+### Corruption behavior
+
+- The dense upper-center mass comes from the source image, not procedural noise.
+- Vertical streams are copied columns from the real source image, biased toward the center, then stretched and dragged downward.
+- Horizontal LCD tears copy real framebuffer rows with random offsets, compression, and intermittent refresh skipping.
+- Small block corruptions mutate actual sampled pixels with `getImageData()` / `putImageData()`.
+- RGB separation is applied mainly through the bright-edge mask instead of a global chromatic offset.
+
+### Explicit non-goals
+
+- Do not synthesize the main visual field from particles, shader noise, or generated glitch bars.
+- Do not use gray background fills or washed-out gradients.
+- Do not make the effect look like clean cyberpunk UI; it should read as damaged photographic memory on a dying monitor.
+
+### Keywords
+
+`real image data corruption` / `photographic framebuffer collapse` / `vertical pixel drag` / `LCD row tearing` / `pure black levels` / `selective RGB edge split`
+
+---
+
+## Retro tunnel cinematic scale refinement (2026-05-12)
+
+### Changed files
+
+| File | Change |
+|------|--------|
+| `src/components/intro/CloudCluster.tsx` | Enlarged and rebuilt the side clouds as massive vertical volumetric walls while preserving the empty center. |
+| `src/components/intro/RetroRoom.tsx` | Raised the room height, widened grid spacing, and increased multi-pass CRT grid glow/fringe. |
+| `src/styles/index.css` | Strengthened the center void mask and CRT vignette so the black negative space dominates the composition. |
+
+### Visual direction
+
+- Keep the existing tunnel structure, camera, and scene composition.
+- Make the void the hero: the center must stay dark, open, and visually pulling inward.
+- Clouds frame the scene from the sides as giant sculpted masses, not decorative fog.
+- Grid lines should read as bright cinematic CRT architecture rather than a dense technical wireframe.
+
+### Implementation notes
+
+- Cloud groups increased to 18 per side with base positions in the side-wall range and deeper z variation.
+- Cloud sprites are scaled up, stretched vertically, contrast-boosted, and clamped outside the center so x = -8 to 8 remains empty.
+- Floor haze is reduced and center-cleared more aggressively.
+- Grid step changed from 3 to 5.5 to reduce clutter.
+- Room height changed from 14 to 22 to make the ceiling feel much taller.
+- Grid glow, bloom, amber warmth, and subtle red/cyan fringe are brighter.
+- The screen-space void mask is wider and darker to preserve an infinite center.
+
+### Keywords
+
+`cinematic retro tunnel` / `massive volumetric cloud walls` / `infinite center void` / `bright CRT grid` / `tall ceiling scale` / `abandoned digital space`
+
+---
+
+## Cross-phase signal continuity update (2026-05-12)
+
+### Changed files
+
+| File | Change |
+|------|--------|
+| `src/components/intro/IntroSequence.tsx` | Reworked phase control so BrokenLCD can reveal SpaceScene before it finishes instead of hard-switching between isolated scenes. |
+| `src/components/intro/BrokenLCD.tsx` | Added `onRevealSpace` and `isRevealingSpace` so the LCD corruption can continue as a fading screen-memory layer while the tunnel appears underneath. |
+| `src/components/intro/SignalContamination.tsx` | Added a shared analog damage overlay used across all phases. |
+| `src/components/intro/SceneCanvas.tsx` | Added an `isEmerging` class hook for tunnel stabilization from corrupted signal. |
+| `src/components/intro/SpaceScene.tsx` | Passes the emergence state into `SceneCanvas`. |
+| `src/styles/index.css` | Added persistent scanlines, luma flicker, horizontal tears, blue-screen text ghosts, tunnel emergence distortion, and subtle steady-state analog wobble. |
+
+### Visual direction
+
+- Treat the whole intro as one damaged monitor signal, not three unrelated screens.
+- Let previous-frame memory contaminate the next scene through overlap, opacity decay, scanline drift, and ghosted text.
+- BrokenLCD reveals the tunnel while still active, so the tunnel feels like it stabilizes out of corruption.
+- The tunnel keeps faint row tearing, CRT scanlines, luma breathing, and micro wobble so it does not become perfect CG.
+
+### Implementation notes
+
+- `IntroSequence` now keeps SpaceScene mounted under BrokenLCD during the final LCD interval.
+- BrokenLCD calls `onRevealSpace` around 2.05s and fades its canvas over ~1.18s using stepped opacity decay.
+- `SignalContamination` stays mounted across phases and changes strength by mode: error, lcd, and space.
+- The LCD phase includes blue-screen text remnants and RGB-shifted ghost text.
+- The space phase retains weaker horizontal tearing and shared monitor texture.
+- `scene-shell--emerging` applies a brief unstable reveal before returning to the steady tunnel wobble.
+
+### Keywords
+
+`framebuffer persistence` / `transition bleeding` / `signal contamination` / `image memory decay` / `lcd to tunnel emergence` / `shared CRT damage`
+
+---
+
+## CloudCluster volumetric material rewrite (2026-05-12)
+
+### Changed file
+
+| File | Change |
+|------|--------|
+| `src/components/intro/CloudCluster.tsx` | Rebuilt the cloud rendering stack for soft cumulus volume, rim lighting, floor fog, and glossy reflections. |
+
+### Visual direction
+
+- Clouds should read as giant illuminated cloud sculptures, not smoke, dust, or noisy fog sprites.
+- Keep the tunnel structure and center void, but make the side cloud walls feel soft, moist, dense, and cinematic.
+- Edges facing the void should glow softly against black.
+- Cloud bases should dissolve into low floor mist with subtle reflected brightness on the grid floor.
+
+### Implementation notes
+
+- Replaced the single grainy alpha texture with separate generated textures for cloud body, left/right rim glow, floor haze, and floor reflection.
+- Cloud body texture uses large rounded cumulus masks, smooth density gradients, internal shadow puffs, and soft highlight lobes.
+- Removed high-frequency dusty noise in favor of larger smooth gradients and broader density forms.
+- Rim glow is rendered as an additive second sprite layer, offset toward the center void.
+- Reflection planes sit on the floor under selected cloud groups with blurred, scanline-broken brightness.
+- Floor haze is stronger and wider, with side-biased mist and center clearing to preserve the void.
+- Cloudlets are depth-sorted and retain side-safe placement so the central x = -8 to 8 region stays open.
+
+### Keywords
+
+`soft volumetric cumulus` / `cloud rim lighting` / `floor mist` / `glossy cloud reflections` / `cinematic vapor density` / `giant cloud walls`
+
+---
+
+## Retro tunnel synthwave VHS overhaul (2026-05-12)
+
+### Changed files
+
+| File | Change |
+|------|--------|
+| `src/components/intro/CloudCluster.tsx` | Shifted cloud, fog, rim, and reflection materials from grayscale cumulus to neon violet/magenta/cyan synthwave vapor. |
+| `src/components/intro/RetroRoom.tsx` | Recolored grid passes into warm white, magenta, violet, cyan, and amber glow layers with stronger bloom offsets. |
+| `src/components/intro/SceneCanvas.tsx` | Added subtle violet scene fog and a cyan secondary star glow layer. |
+| `src/styles/index.css` | Pushed CRT/VHS treatment harder with saturated scene filtering, magenta bloom, heavier scanlines, chromatic edge tint, warm HUD text, and analog color drift. |
+
+### Visual direction
+
+- Major style shift from clean monochrome wireframe to dreamy synthwave VHS cinematic atmosphere.
+- Scene should read like a surreal neon cloud dimension recorded through CRT glass.
+- Palette centers on neon violet, magenta glow, deep black, soft cyan highlights, and warm pink bloom.
+- Clouds should feel internally lit, with violet bodies, magenta rims, cyan accents, and stronger glossy floor reflections.
+- Grid should feel glowing and diffused rather than purely technical.
+
+### Implementation notes
+
+- Cloud body texture now uses pink/violet volume gradients and purple-blue internal shadows.
+- Rim texture uses magenta bloom and cyan secondary glow.
+- Floor haze and reflection textures now carry pink, violet, and cyan light.
+- Reflection planes are larger and more opaque to make the floor feel wet/glossy.
+- Grid materials were recolored from neutral white/gray to neon synthwave layers.
+- CRT overlays now add stronger scanlines, bloom tint, color drift, saturation, and warm orange HUD framing.
+
+### Keywords
+
+`dreamy synthwave VHS` / `neon cloud dimension` / `magenta violet clouds` / `wet glossy grid floor` / `CRT color bloom` / `retro sci-fi album cover`
+
+---
+
+## Retro tunnel exposure/readability rebalance (2026-05-12)
+
+### Changed files
+
+| File | Change |
+|------|--------|
+| `src/components/intro/CloudCluster.tsx` | Reduced cloud, fog, rim, and reflection intensity while keeping the magenta/violet/cyan synthwave palette. |
+| `src/components/intro/RetroRoom.tsx` | Kept the neon grid bright but reduced bloom dominance so ceiling, wall, and floor structure stay readable. |
+| `src/components/intro/SceneCanvas.tsx` | Lowered scene fog density so atmosphere supports depth without washing over the tunnel. |
+| `src/styles/index.css` | Darkened the center void mask, reduced global bloom overlays, and lowered contamination opacity in the space phase. |
+
+### Visual direction
+
+- Preserve the dreamy synthwave VHS palette.
+- Avoid full-screen purple haze, overexposure, or fog covering the camera.
+- Keep the wireframe room readable at all times.
+- Restore clear cloud silhouettes with sculpted side masses.
+- Keep the center void dark, deep, and dominant.
+
+### Priority order
+
+1. Scene readability.
+2. Cloud silhouette.
+3. Center void.
+4. Atmosphere.
+5. Bloom.
+
+### Keywords
+
+`synthwave readability` / `reduced bloom` / `subtle fog` / `clear cloud silhouettes` / `deep center void` / `balanced CRT atmosphere`
