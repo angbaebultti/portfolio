@@ -4,12 +4,19 @@ import * as THREE from 'three'
 import RetroRoom from './RetroRoom'
 import CloudCluster from './CloudCluster'
 
+const CAMERA_START_Z = 12
+const CAMERA_END_Z = -54
+const CAMERA_Y = 7
+const LOOK_AHEAD_Z = 24
+const ROOM_BACK_Z = -80
+const LOOK_TARGET_MIN_Z = ROOM_BACK_Z + 7
+
 function SceneSetup() {
   const { scene } = useThree()
 
   useEffect(() => {
     scene.background = new THREE.Color(0x000000)
-    scene.fog = new THREE.FogExp2(0x120014, 0.0024)
+    scene.fog = new THREE.FogExp2(0x080008, 0.00018)
 
     return () => {
       scene.background = null
@@ -39,7 +46,7 @@ function StarField() {
   return (
     <group>
       <points geometry={geometry}>
-        <pointsMaterial color={0xffd8f7} size={0.18} sizeAttenuation transparent opacity={0.9} />
+        <pointsMaterial color={0xfff0fb} size={0.16} sizeAttenuation transparent opacity={0.82} />
       </points>
       <points geometry={geometry}>
         <pointsMaterial
@@ -47,7 +54,7 @@ function StarField() {
           size={0.34}
           sizeAttenuation
           transparent
-          opacity={0.18}
+          opacity={0.1}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
@@ -62,24 +69,27 @@ function CameraRig({ scrollRef }: { scrollRef: RefObject<HTMLDivElement | null> 
   const currentProgress = useRef(0)
 
   useEffect(() => {
-    camera.position.set(0, 7, 12)
+    camera.position.set(0, CAMERA_Y, CAMERA_START_Z)
     camera.up.set(0, 1, 0)
-    camera.lookAt(0, 7, 0)
+    camera.lookAt(0, CAMERA_Y, CAMERA_START_Z - LOOK_AHEAD_Z)
     camera.updateProjectionMatrix()
 
     const trigger = scrollRef.current
     if (!trigger) return
 
-    const onWheel = (event: WheelEvent) => {
-      targetProgress.current = Math.min(
-        Math.max(targetProgress.current + event.deltaY * 0.00055, 0),
-        1
-      )
+    const updateScrollProgress = () => {
+      const scrollRange = Math.max(trigger.offsetHeight - window.innerHeight, 1)
+      targetProgress.current = Math.min(Math.max(window.scrollY / scrollRange, 0), 1)
     }
 
-    window.addEventListener('wheel', onWheel, { passive: true })
+    updateScrollProgress()
+    window.addEventListener('scroll', updateScrollProgress, { passive: true })
+    window.addEventListener('resize', updateScrollProgress)
 
-    return () => window.removeEventListener('wheel', onWheel)
+    return () => {
+      window.removeEventListener('scroll', updateScrollProgress)
+      window.removeEventListener('resize', updateScrollProgress)
+    }
   }, [camera, scrollRef])
 
   useFrame((_, delta) => {
@@ -87,8 +97,11 @@ function CameraRig({ scrollRef }: { scrollRef: RefObject<HTMLDivElement | null> 
     currentProgress.current += (targetProgress.current - currentProgress.current) * smoothing
 
     const progress = currentProgress.current
-    camera.position.set(0, 7, 12 - progress * 14)
-    camera.lookAt(0, 7, 0)
+    const cameraZ = THREE.MathUtils.lerp(CAMERA_START_Z, CAMERA_END_Z, progress)
+    const targetZ = Math.max(cameraZ - LOOK_AHEAD_Z, LOOK_TARGET_MIN_Z)
+
+    camera.position.set(0, CAMERA_Y, cameraZ)
+    camera.lookAt(0, CAMERA_Y, targetZ)
   })
 
   return null

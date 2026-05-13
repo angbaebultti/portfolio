@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-const GRID_STEP = 5.5
+const GRID_STEP = 4.6
 const ROOM_WIDTH = 60
-const ROOM_HEIGHT = 22
+const ROOM_HEIGHT = 24
 const ROOM_FRONT_Z = 12
 const ROOM_BACK_Z = -80
 const ROOM_DEPTH = ROOM_FRONT_Z - ROOM_BACK_Z
@@ -94,24 +94,23 @@ export default function RetroRoom() {
     return {
       floorGeometry: makeGridGeometry(ROOM_WIDTH, ROOM_DEPTH, GRID_STEP),
       wallGeometry: makeGridGeometry(ROOM_DEPTH, ROOM_HEIGHT, GRID_STEP),
-      coreMaterial: makeLineMaterial(0xfff0ff, 1),
-      glowMaterial: makeLineMaterial(0xff68df, 0.34),
-      bloomMaterial: makeLineMaterial(0xa970ff, 0.18),
-      redMaterial: makeLineMaterial(0xff4fbc, 0.18),
-      cyanMaterial: makeLineMaterial(0x54e8ff, 0.2),
-      amberMaterial: makeLineMaterial(0xffb468, 0.16),
+      coreMaterial: makeLineMaterial(0xffffff, 1),
+      glowMaterial: makeLineMaterial(0xff86df, 0.24),
+      bloomMaterial: makeLineMaterial(0x8a70ff, 0.09),
+      redMaterial: makeLineMaterial(0xff4fbc, 0.11),
+      cyanMaterial: makeLineMaterial(0x54e8ff, 0.12),
+      amberMaterial: makeLineMaterial(0xffb468, 0.14),
     }
   }, [])
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime
-    const flicker = 0.96 + Math.sin(t * 7.1) * 0.018 + Math.sin(t * 17.3) * 0.012
-    coreMaterial.opacity = 0.99 + flicker * 0.045
-    glowMaterial.opacity = 0.32 + Math.sin(t * 5.7) * 0.026
-    bloomMaterial.opacity = 0.17 + Math.sin(t * 3.4) * 0.022
-    amberMaterial.opacity = 0.15 + Math.sin(t * 4.9) * 0.018
-    redMaterial.opacity = 0.16 + Math.sin(t * 6.3) * 0.014
-    cyanMaterial.opacity = 0.18 + Math.sin(t * 6.9) * 0.016
+    coreMaterial.opacity = 1.0
+    glowMaterial.opacity = 0.23 + Math.sin(t * 5.7) * 0.014
+    bloomMaterial.opacity = 0.08 + Math.sin(t * 3.4) * 0.008
+    amberMaterial.opacity = 0.13 + Math.sin(t * 4.9) * 0.012
+    redMaterial.opacity = 0.1 + Math.sin(t * 6.3) * 0.008
+    cyanMaterial.opacity = 0.11 + Math.sin(t * 6.9) * 0.008
   })
 
   return (

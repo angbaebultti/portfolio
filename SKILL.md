@@ -1030,3 +1030,119 @@ The retro room scene was rendering as a thin strip because the Canvas viewport h
 ### Keywords
 
 `synthwave readability` / `reduced bloom` / `subtle fog` / `clear cloud silhouettes` / `deep center void` / `balanced CRT atmosphere`
+
+---
+
+## Tunnel geometry restoration pass (2026-05-13)
+
+### Changed files
+
+| File | Change |
+|------|--------|
+| `src/styles/index.css` | Removed the 90% black center ellipse from `void-depth-mask` and cut the `crt-atmosphere` dark vignette from 80% → 36% so grid geometry shows through. |
+| `src/components/intro/SceneCanvas.tsx` | Reduced fog density from `0.0024` → `0.0009` so distant grid lines stay readable. |
+| `src/components/intro/CloudCluster.tsx` | Pushed center-safe clamp from `±9.8` → `±13`, cut haze plane opacity `0.34` → `0.09`, cloud sprite body `0.82` → `0.72`, rim glow `0.36` → `0.22`. |
+| `src/components/intro/RetroRoom.tsx` | Core line color `0xfff0ff` → `0xffffff`, glow layer `0.34` → `0.42`, bloom layer `0.18` → `0.22`, removed unused flicker variable. |
+
+### Root cause
+
+The `void-depth-mask` CSS overlay had a `radial-gradient(ellipse 34% 36% at 50% 48%, rgba(0,0,0,0.9) …)` centered on screen. This put a 90% black overlay over the exact center where the tunnel converges — making the wireframe invisible and producing the "blurry dark hole" appearance. The `crt-atmosphere` vignette (0.8 → 0.36) and heavy floor haze (additive, 0.34) compounded the issue with god rays.
+
+### Priority order (enforced)
+
+1. Room geometry — wireframe must be dominant, always readable
+2. Center void — dark from 3D background, not CSS overlay
+3. Cloud silhouette — wall-anchored, center x ±13 stays empty
+4. Reflections
+5. Atmosphere
+6. Bloom
+
+### Constraints
+
+- Center void darkness comes from the 3D scene background, not CSS masks.
+- CSS overlays are for CRT scanlines and subtle edge vignette only — never center darkening.
+- Fog density must stay below 0.001 to preserve grid depth.
+- Cloud center clamp must stay ≥ ±12 to keep tunnel corridor open.
+
+### Keywords
+
+`tunnel geometry restoration` / `remove center void mask` / `grid visibility` / `cloud wall framing` / `reduced fog` / `no center CSS darkening`
+
+---
+
+## Retro tunnel sculpted-cloud rewrite (2026-05-13)
+
+### Changed files
+
+| File | Change |
+|------|--------|
+| `src/components/intro/CloudCluster.tsx` | Rebuilt cloud layout as asymmetric sculpted cloud towers made from many sharper layered sprites instead of giant blurred fog planes. |
+| `src/components/intro/RetroRoom.tsx` | Increased grid density and strengthened the white tunnel structure while reducing colored bloom passes. |
+| `src/components/intro/SceneCanvas.tsx` | Reduced scene fog and secondary star glow so the chamber stays dark and readable. |
+| `src/styles/index.css` | Reduced CRT/VHS overlay intensity, magenta wash, text glow, and bloom while preserving scanlines and warm monitor accents. |
+
+### Visual direction
+
+- Clouds should read as dense physical formations with cauliflower silhouettes, bright rim light, white highlights, and dark shadow pockets.
+- Avoid fullscreen pink fog, heavy blur, mirrored cloud walls, center haze, and over-bloom.
+- The tunnel grid should dominate the scene: floor, walls, ceiling, and center void remain crisp and black.
+- Cloud composition is intentionally asymmetric: a larger right-side tower, smaller left formations, varied heights, and deeper staggered clusters.
+- Floor reflections are faint, low-opacity glints only, not mirror images.
+
+### Keywords
+
+`sculpted volumetric clouds` / `crisp retro chamber` / `dark center void` / `reduced VHS wash` / `asymmetric cloud towers` / `subtle floor reflections`
+
+---
+
+## CloudCluster dense material refinement (2026-05-13)
+
+### Changed file
+
+| File | Change |
+|------|--------|
+| `src/components/intro/CloudCluster.tsx` | Refined only cloud material and shape while leaving camera, tunnel, grid, room layout, scene setup, and CSS untouched. |
+
+### Cloud direction
+
+- Increased cloudlet density and reduced individual sprite scale so formations read as stacked cauliflower-like lobes instead of broad fog sheets.
+- Raised body opacity and alpha clipping to make the masses block the background more like physical cloud volume.
+- Reworked procedural cloud textures with sharper alpha masks, many small sub-puffs, internal cutouts, darker shadow pockets, and pixel-level micro-contrast.
+- Shifted body color toward white/light gray with purple shadow depth; rim texture adds restrained pink-orange highlights.
+- Added low base puffs, contact shadow planes, and very subtle floor reflections/pooling so clouds feel grounded.
+
+### Constraints
+
+- Do not change camera, tunnel proportions, grid perspective, or room layout for this pass.
+- Avoid large blurred billboard fog and mirrored reflections.
+
+### Keywords
+
+`dense cloud material` / `cauliflower lobes` / `opaque cloud volume` / `dark interior pockets` / `white body pink rim` / `grounded floor contact`
+
+---
+
+## 2026-05-13 Control Room Section
+
+- Added `src/components/ControlRoom.tsx`, `src/components/CRTMonitor.tsx`, and `src/styles/controlroom.css`.
+- Placed the retro control room below the existing tunnel sequence in `src/App.tsx`.
+- Enabled natural vertical page scrolling while keeping the fixed retro tunnel scene intact.
+- Built an amber CRT monitor wall with six placeholder project channels, two decorative signal panels, scanlines, glowing bezels, and a decorative bottom control bar.
+
+---
+
+## 2026-05-13 CloudCluster Volumetric Rebuild
+
+- Rebuilt `src/components/intro/CloudCluster.tsx` from scratch around fewer, much larger baked cloud masses instead of hundreds of repeated sprite puffs.
+- Added primary silhouette layers, medium sculpting layers, soft veil layers, warm rim-glow overlays, and floor-hugging fog planes.
+- Preserved the empty center tunnel void by keeping cloud masses locked to the left and right sides.
+- Shifted the material direction toward deep navy/violet interiors, magenta midtones, pink/orange rim lighting, and soft cinematic atmospheric density.
+
+---
+
+## 2026-05-13 Tunnel Scroll End Camera Fix
+
+- Fixed `src/components/intro/SceneCanvas.tsx` so tunnel camera progress follows actual document scroll instead of accumulated wheel delta.
+- Clamped the scroll end camera position to `z = -54`, well before the `RetroRoom` back wall at `z = -80`.
+- Changed the camera look target to remain ahead inside the tunnel during the whole scroll, preventing the end state from looking back into empty/front space.
+- Reduced `FogExp2` density from `0.00028` to `0.00018` so the deep tunnel grid remains visible near scroll completion.
