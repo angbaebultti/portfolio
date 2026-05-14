@@ -1146,3 +1146,29 @@ The `void-depth-mask` CSS overlay had a `radial-gradient(ellipse 34% 36% at 50% 
 - Clamped the scroll end camera position to `z = -54`, well before the `RetroRoom` back wall at `z = -80`.
 - Changed the camera look target to remain ahead inside the tunnel during the whole scroll, preventing the end state from looking back into empty/front space.
 - Reduced `FogExp2` density from `0.00028` to `0.00018` so the deep tunnel grid remains visible near scroll completion.
+
+---
+
+## 2026-05-14 CloudCluster layered canvas cloud rewrite
+
+- Rewrote `src/components/intro/CloudCluster.tsx` around layered `THREE.Sprite` clouds using generated 512x512 CanvasTexture alpha maps.
+- Each generated cloud texture draws 8-12 overlapping white/light-gray radial-gradient puffs with transparent edges, then applies subtle pixel noise for a softer cumulus surface.
+- Replaced the previous rim-heavy billboard look with cloud groups made from one large base sprite, multiple medium offset sprites, and small detail sprites.
+- Main clouds now use `THREE.SpriteMaterial`, `THREE.NormalBlending`, `transparent`, `depthWrite={false}`, `depthTest={false}`, explicit `renderOrder`, and `frustumCulled={false}`.
+- Cloud colors are material tints: soft purple `#c8a0e0`, pink `#e090c0`, and deep shadow purple `#6040a0`.
+- Cloud groups are placed inside the visible tunnel corridor at x=-15..-8 and x=8..15, y=3..12, z=-5..-30, with scroll-only z/parallax motion.
+- Added 5 large low-opacity floor fog sprites at y=0..2 with scale 20-30 and opacity 0.15-0.25.
+- Avoided drei Billboard, PointsMaterial, particle systems, and additive blending for main cloud bodies.
+
+---
+
+## 2026-05-14 CloudCluster image texture replacement
+
+- Copied `src/assets/cloud.png` to `src/assets/only_cloud.png` for the tunnel cloud texture source.
+- Replaced `src/components/intro/CloudCluster.tsx` with an image-based implementation using `THREE.TextureLoader`.
+- Removed all procedural canvas cloud generation, sprite groups, ground-fog generators, and scroll-parallax cloud code.
+- The scene now renders split left/right `PlaneGeometry` cloud instances:
+  - Left cloud plane at `(-10, 5, -12)`, scale `(20, 18, 1)`, using texture `offset=(0, 0)` and `repeat=(0.5, 1)`.
+  - Right cloud plane at `(10, 5, -12)`, scale `(20, 18, 1)`, using texture `offset=(0.5, 0)` and `repeat=(0.5, 1)`.
+- Both cloud planes use cloned `TextureLoader` textures and `MeshBasicMaterial` with `transparent`, `alphaTest: 0.01`, `depthWrite: false`, `side: THREE.DoubleSide`, and explicit render order.
+- Tightened the tunnel composition by reducing `RetroRoom` width to `34` units and setting the tunnel camera FOV to `65`.

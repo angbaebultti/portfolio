@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useRef, type RefObject } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { useEffect, useMemo, useRef, type MutableRefObject, type RefObject } from 'react'
+import { Canvas, useThree } from '@react-three/fiber'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import * as THREE from 'three'
 import RetroRoom from './RetroRoom'
 import CloudCluster from './CloudCluster'
 
 const CAMERA_START_Z = 12
-const CAMERA_END_Z = -54
+const CAMERA_END_Z = -104
 const CAMERA_Y = 7
-const LOOK_AHEAD_Z = 24
-const ROOM_BACK_Z = -80
+const LOOK_AHEAD_Z = 34
+const ROOM_BACK_Z = -160
 const LOOK_TARGET_MIN_Z = ROOM_BACK_Z + 7
+
+gsap.registerPlugin(ScrollTrigger)
 
 function SceneSetup() {
   const { scene } = useThree()
@@ -63,10 +67,14 @@ function StarField() {
   )
 }
 
-function CameraRig({ scrollRef }: { scrollRef: RefObject<HTMLDivElement | null> }) {
-  const { camera } = useThree()
-  const targetProgress = useRef(0)
-  const currentProgress = useRef(0)
+function CameraRig({
+  scrollRef,
+  scrollProgressRef,
+}: {
+  scrollRef: RefObject<HTMLDivElement | null>
+  scrollProgressRef: MutableRefObject<number>
+}) {
+  const { camera, invalidate } = useThree()
 
   useEffect(() => {
     camera.position.set(0, CAMERA_Y, CAMERA_START_Z)
@@ -77,32 +85,35 @@ function CameraRig({ scrollRef }: { scrollRef: RefObject<HTMLDivElement | null> 
     const trigger = scrollRef.current
     if (!trigger) return
 
-    const updateScrollProgress = () => {
-      const scrollRange = Math.max(trigger.offsetHeight - window.innerHeight, 1)
-      targetProgress.current = Math.min(Math.max(window.scrollY / scrollRange, 0), 1)
+    const applyCameraProgress = (progress: number) => {
+      const cameraZ = THREE.MathUtils.lerp(CAMERA_START_Z, CAMERA_END_Z, progress)
+      const targetZ = Math.max(cameraZ - LOOK_AHEAD_Z - progress * 18, LOOK_TARGET_MIN_Z)
+
+      scrollProgressRef.current = progress
+      camera.position.set(0, CAMERA_Y - progress * 1.8, cameraZ)
+      camera.lookAt(0, CAMERA_Y - progress * 1.2, targetZ)
+
+      const perspectiveCamera = camera as THREE.PerspectiveCamera
+      perspectiveCamera.fov = 65
+      perspectiveCamera.updateProjectionMatrix()
+      invalidate()
     }
 
-    updateScrollProgress()
-    window.addEventListener('scroll', updateScrollProgress, { passive: true })
-    window.addEventListener('resize', updateScrollProgress)
+    const scrollTrigger = ScrollTrigger.create({
+      trigger,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: true,
+      onUpdate: self => applyCameraProgress(self.progress),
+      onRefresh: self => applyCameraProgress(self.progress),
+    })
+
+    applyCameraProgress(scrollTrigger.progress)
 
     return () => {
-      window.removeEventListener('scroll', updateScrollProgress)
-      window.removeEventListener('resize', updateScrollProgress)
+      scrollTrigger.kill()
     }
-  }, [camera, scrollRef])
-
-  useFrame((_, delta) => {
-    const smoothing = 1 - Math.exp(-delta * 1.7)
-    currentProgress.current += (targetProgress.current - currentProgress.current) * smoothing
-
-    const progress = currentProgress.current
-    const cameraZ = THREE.MathUtils.lerp(CAMERA_START_Z, CAMERA_END_Z, progress)
-    const targetZ = Math.max(cameraZ - LOOK_AHEAD_Z, LOOK_TARGET_MIN_Z)
-
-    camera.position.set(0, CAMERA_Y, cameraZ)
-    camera.lookAt(0, CAMERA_Y, targetZ)
-  })
+  }, [camera, invalidate, scrollProgressRef, scrollRef])
 
   return null
 }
@@ -113,6 +124,7 @@ interface SceneCanvasProps {
 
 export default function SceneCanvas({ isEmerging = false }: SceneCanvasProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollProgressRef = useRef(0)
   const sceneClassName = ['scene-shell', isEmerging ? 'scene-shell--emerging' : '']
     .filter(Boolean)
     .join(' ')
@@ -120,8 +132,9 @@ export default function SceneCanvas({ isEmerging = false }: SceneCanvasProps) {
   return (
     <>
       <Canvas
-        camera={{ position: [0, 7, 12], fov: 75, near: 0.1, far: 1000 }}
+        camera={{ position: [0, 7, 12], fov: 65, near: 0.1, far: 1000 }}
         className={sceneClassName}
+        frameloop="demand"
         style={{
           position: 'fixed',
           inset: 0,
@@ -132,10 +145,10 @@ export default function SceneCanvas({ isEmerging = false }: SceneCanvasProps) {
         dpr={[1, 2]}
       >
         <SceneSetup />
-        <CameraRig scrollRef={scrollRef} />
+        <CameraRig scrollRef={scrollRef} scrollProgressRef={scrollProgressRef} />
         <StarField />
-        <RetroRoom />
-        <CloudCluster />
+        <RetroRoom scrollProgressRef={scrollProgressRef} />
+        <CloudCluster scrollProgressRef={scrollProgressRef} />
       </Canvas>
       <div className="void-depth-mask" aria-hidden="true" />
       <div className="crt-atmosphere" aria-hidden="true" />

@@ -1,12 +1,12 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, type MutableRefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 const GRID_STEP = 4.6
-const ROOM_WIDTH = 60
+const ROOM_WIDTH = 34
 const ROOM_HEIGHT = 24
 const ROOM_FRONT_Z = 12
-const ROOM_BACK_Z = -80
+const ROOM_BACK_Z = -170
 const ROOM_DEPTH = ROOM_FRONT_Z - ROOM_BACK_Z
 const ROOM_CENTER_Z = (ROOM_FRONT_Z + ROOM_BACK_Z) / 2
 
@@ -80,7 +80,12 @@ function RoomFaces({
   )
 }
 
-export default function RetroRoom() {
+interface RetroRoomProps {
+  scrollProgressRef?: MutableRefObject<number>
+}
+
+export default function RetroRoom({ scrollProgressRef }: RetroRoomProps) {
+  const tunnelRef = useRef<THREE.Group>(null)
   const {
     floorGeometry,
     wallGeometry,
@@ -103,18 +108,24 @@ export default function RetroRoom() {
     }
   }, [])
 
-  useFrame(({ clock }) => {
-    const t = clock.elapsedTime
-    coreMaterial.opacity = 1.0
-    glowMaterial.opacity = 0.23 + Math.sin(t * 5.7) * 0.014
-    bloomMaterial.opacity = 0.08 + Math.sin(t * 3.4) * 0.008
-    amberMaterial.opacity = 0.13 + Math.sin(t * 4.9) * 0.012
-    redMaterial.opacity = 0.1 + Math.sin(t * 6.3) * 0.008
-    cyanMaterial.opacity = 0.11 + Math.sin(t * 6.9) * 0.008
+  useFrame(() => {
+    const progress = scrollProgressRef?.current ?? 0
+
+    if (tunnelRef.current) {
+      tunnelRef.current.position.z = (progress * 82) % GRID_STEP
+      tunnelRef.current.scale.setScalar(1 + progress * 0.035)
+    }
+
+    coreMaterial.opacity = 0.9 + progress * 0.1
+    glowMaterial.opacity = 0.23 + progress * 0.09
+    bloomMaterial.opacity = 0.08 + progress * 0.05
+    amberMaterial.opacity = 0.13 + progress * 0.04
+    redMaterial.opacity = 0.1 + progress * 0.04
+    cyanMaterial.opacity = 0.11 + progress * 0.05
   })
 
   return (
-    <group>
+    <group ref={tunnelRef}>
       <RoomFaces
         floorGeometry={floorGeometry}
         wallGeometry={wallGeometry}

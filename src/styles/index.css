@@ -108,7 +108,8 @@ button {
   z-index: 0;
   transform-origin: 50% 50%;
   animation: scene-analog-breathe 7.2s ease-in-out infinite;
-  filter: contrast(1.16) saturate(0.96) brightness(0.84);
+  filter: contrast(1.16) saturate(0.98) brightness(0.86) drop-shadow(1px 0 rgba(255, 42, 190, 0.09))
+    drop-shadow(-1px 0 rgba(54, 224, 255, 0.07));
 }
 
 .scene-shell--emerging {
@@ -163,10 +164,36 @@ button {
   backdrop-filter: blur(0.18px) saturate(1.02);
 }
 
+.crt-atmosphere::before,
 .crt-atmosphere::after {
   position: absolute;
   inset: 0;
   content: '';
+  pointer-events: none;
+}
+
+.crt-atmosphere::before {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 80, 210, 0.012) 0,
+      rgba(255, 80, 210, 0.012) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    repeating-radial-gradient(
+      circle at 32% 28%,
+      rgba(255, 255, 255, 0.012) 0,
+      rgba(255, 255, 255, 0.012) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  mix-blend-mode: screen;
+  opacity: 0.38;
+  animation: crt-noise-flicker 0.22s steps(2, end) infinite;
+}
+
+.crt-atmosphere::after {
   background:
     linear-gradient(
       90deg,
@@ -177,7 +204,9 @@ button {
     ),
     radial-gradient(circle at 50% 57%, rgba(255, 58, 202, 0.006), transparent 32%),
     radial-gradient(circle at 50% 52%, transparent 0, transparent 36%, rgba(0, 0, 0, 0.3) 100%);
-  animation: vhs-color-bloom 3.8s steps(5, end) infinite;
+  animation:
+    vhs-color-bloom 3.8s steps(5, end) infinite,
+    crt-rgb-separation 5.6s ease-in-out infinite;
 }
 
 .vhs-monitor-frame {
@@ -464,6 +493,37 @@ button {
   62% {
     opacity: 0.5;
     transform: translateX(-0.22vw);
+  }
+}
+
+@keyframes crt-noise-flicker {
+  0% {
+    opacity: 0.26;
+    transform: translate(0, 0);
+  }
+  50% {
+    opacity: 0.42;
+    transform: translate(0.35vw, -0.2vh);
+  }
+  100% {
+    opacity: 0.3;
+    transform: translate(-0.2vw, 0.25vh);
+  }
+}
+
+@keyframes crt-rgb-separation {
+  0%,
+  100% {
+    filter: none;
+    transform: translateX(0);
+  }
+  44% {
+    filter: hue-rotate(1deg);
+    transform: translateX(0.16vw);
+  }
+  58% {
+    filter: hue-rotate(-1deg);
+    transform: translateX(-0.12vw);
   }
 }
 
